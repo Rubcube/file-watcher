@@ -1,0 +1,19 @@
+{
+  "name": "file-watcher",
+  "version": "1.0.0",
+  "description": "File watcher used to map plugins to their respective applications",
+  "main": "index.js",
+  "author": "Guilherme Cesar Tomiasi",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "lodash": "^4.17.21",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.7",
+    "typescript": "^5.5.2"
+  }
+}
