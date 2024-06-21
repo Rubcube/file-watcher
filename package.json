@@ -1,6 +1,6 @@
 {
   "name": "file-watcher",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "File watcher used to map plugins to their respective applications",
   "main": "index.js",
   "author": "Guilherme Cesar Tomiasi",
