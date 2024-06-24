@@ -1,3 +1,7 @@
+# 0.0.3
+
+- Allowing for different actions: copy or command
+
 # 0.0.2
 
 - Changing file watcher behavior on start, avoiding initial checks

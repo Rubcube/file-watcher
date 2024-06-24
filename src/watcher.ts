@@ -1,9 +1,12 @@
-import { FILE_WATCHER_MAPPER } from "./mapper";
+import "dotenv/config";
+
 import chokidar from "chokidar";
 import path from "path";
+
+import { Action, FILE_WATCHER_MAPPER } from "./mapper";
+import { copyFileSync } from "fs";
 import { forOwn } from "lodash";
 import { spawn } from "child_process";
-import "dotenv/config";
 
 if (!process.env.BASE_PATH) {
   console.error("BASE_PATH is not set");
@@ -12,38 +15,42 @@ if (!process.env.BASE_PATH) {
 
 const basePath = process.env.BASE_PATH;
 
-function handleAction(
-  originPath: string,
-  commands: Record<string, string[]>
+function handleActions(
+  originWithBase: string,
+  actions: Record<string, Action[]>,
+  emmitedBy: string,
 ) {
-  console.log("Change detected in", originPath);
-  return function () {
-    Object.keys(commands).forEach((destination) => {
-      const absoluteDestination = path.join(basePath, destination);
-      const command = commands[destination].join(" ");
-      console.log(`Running command: ${command}`);
-      console.log(`With cwd: ${absoluteDestination}`);
-      const childProcess = spawn(
-        command,
-        [], {
-          cwd: absoluteDestination,
+  console.log(`File ${emmitedBy} has been changed`);
+  Object.entries(actions).forEach(([destination, actions]) => {
+    const destinationWithBase = path.join(basePath, destination);
+    actions.forEach((action) => {
+      if (action.action === "copy") {
+        const currentLocation = emmitedBy;
+        const destinationWithSuffix = path.join(destinationWithBase, action.to);
+        const newLocation = emmitedBy.replace(originWithBase, destinationWithSuffix);
+        console.log(`Copying ${currentLocation} to ${newLocation}`);
+        copyFileSync(
+          currentLocation,
+          newLocation
+        );
+      } else if (action.action === "command") {
+        const command = action.command.join(" ");
+        const child = spawn(command, [], {
+          cwd: destinationWithBase,
           shell: true,
-        }
-      );
-      childProcess.stderr.on("data", (data: Buffer) => {
-        console.error(data.toString());
-      });
-      childProcess.stdout.on("data", (data: Buffer) => {
-        console.log(data.toString());
-      });
+        });
+        child.stdout.on("data", (data) => {
+          console.log(`stdout: ${data}`);
+        });
+      }
     });
-  }
+  });
 }
 
-forOwn(FILE_WATCHER_MAPPER, (commands: Record<string, string[]>, origin: string) => {
-  const absoluteOrigin = path.join(basePath, origin);
-  chokidar.watch(absoluteOrigin, {
+forOwn(FILE_WATCHER_MAPPER, (actions: Record<string, Action[]>, origin: string) => {
+  const originWithBase = path.join(basePath, origin);
+  chokidar.watch(originWithBase, {
     ignoreInitial: true,
-  }).on("change", handleAction(absoluteOrigin, commands))
-    .on("add", handleAction(absoluteOrigin, commands));
+  }).on("change", (emmitedBy) => handleActions(originWithBase, actions, emmitedBy))
+    .on("add", (emmitedBy) => handleActions(originWithBase, actions, emmitedBy));
 });
