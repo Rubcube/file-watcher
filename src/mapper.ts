@@ -20,6 +20,14 @@ type FileWatcherMapper = {
 };
 
 export const FILE_WATCHER_MAPPER: FileWatcherMapper = {
+  "banking-app-road-plugin/lib": {
+    "": [
+      {
+        action: "command",
+        command: ["yarn", "copy:assets"],
+      },
+    ]
+  },
   "banking-app-road-plugin/dist": {
     "banking-app-customizer-out-road": [
       {

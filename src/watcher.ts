@@ -36,7 +36,7 @@ function handleActions(
       } else if (action.action === "command") {
         const command = action.command.join(" ");
         const child = spawn(command, [], {
-          cwd: destinationWithBase,
+          cwd: originWithBase,
           shell: true,
         });
         child.stdout.on("data", (data) => {
